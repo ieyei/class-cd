@@ -195,7 +195,7 @@ kind: Deployment
 metadata:
   name: nginx
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: nginx
@@ -204,17 +204,6 @@ spec:
       labels:
         app: nginx
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 10
-              preference:
-                matchExpressions:
-                  - key: nodetype
-                    operator: In
-                    values:
-                      - nginxserver
-                      - webserver
       containers:
         - name: nginx
           image: nginx:latest
@@ -235,9 +224,9 @@ keywords: # 이 프로젝트에 대한 키워드 리스트 (선택)
   - nginx
   - webserver
 maintainers: # (선택)
-  - name: T3-CTA # 각 maintainer마다 필수
-    email: T3-CTA@email.com # 각 maintainer마다 선택
-    url: T3-CTA.com # 각 maintainer마다 선택
+  - name: T3 # 각 maintainer마다 필수
+    email: T3@email.com # 각 maintainer마다 선택
+    url: T3.com # 각 maintainer마다 선택
 version: 0.1.0 # 차트의 버전, SemVer 표준 (필수)
 appVersion: "1.0" # app의 버전 (선택)
 ```
@@ -260,8 +249,8 @@ helm install my-nginx . -n $MY_ID
 
 ```bash
 NAME: my-nginx
-LAST DEPLOYED: Fri Feb 17 10:03:50 2023
-NAMESPACE: t3user998
+LAST DEPLOYED: Wed May 29 02:48:04 2024
+NAMESPACE: 22222
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -284,17 +273,15 @@ helm ls -n $MY_ID
 - (수행코드/결과 예시)
 
 ```bash
-ubuntu@ip-10-1-10-86:~/k8s-helm/nginx$ kubectl get all -n $MY_ID | grep nginx
-pod/nginx-748dc476f5-hml98                             2/2     Running     0             52m
-pod/nginx-748dc476f5-pjqjv                             2/2     Running     0             52m
-pod/nginx-748dc476f5-sbk6q                             2/2     Running     0             52m
-service/nginx                              ClusterIP   172.20.119.157   <none>        80/TCP                                            52m
-deployment.apps/nginx                              3/3     3            3           52m
-replicaset.apps/nginx-748dc476f5                             3         3         3       52m
-
-ubuntu@ip-10-1-10-86:~/k8s-helm/nginx$ helm ls -n $MY_ID
+mspmanager:~/environment/nginx $ kubectl get all -n $MY_ID | grep nginx
+pod/nginx-7f7499b7f6-kdklq   1/1     Running   0          53s
+service/nginx   ClusterIP   10.100.79.228   <none>        80/TCP    54s
+deployment.apps/nginx   1/1     1            1           54s
+replicaset.apps/nginx-7f7499b7f6   1         1         1       54s
+mspmanager:~/environment/nginx $ 
+mspmanager:~/environment/nginx $ helm ls -n $MY_ID
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
-my-nginx        33333       1               2024-03-12 01:15:13.425600818 +0000 UTC deployed        my-nginx-0.1.0  1.0
+my-nginx        22222           1               2024-05-29 02:48:04.75636347 +0000 UTC  deployed        nginx-0.1.0     1.16.0     
 ```
 
 ### 2-14. helm uninstall
@@ -312,11 +299,10 @@ kubectl get all -n $MY_ID | grep nginx
 - (수행코드/결과 예시)
 
 ```bash
-ubuntu@ip-10-1-10-86:~/k8s-helm/nginx$ helm uninstall my-nginx -n $MY_ID
+mspmanager:~/environment/nginx $ helm uninstall my-nginx -n $MY_ID
 release "my-nginx" uninstalled
-
-ubuntu@ip-10-1-10-86:~/k8s-helm/nginx$ kubectl get all -n $MY_ID | grep nginx
-
+mspmanager:~/environment/nginx $ kubectl get all -n $MY_ID | grep nginx
+No resources found in 22222 namespace.
 ```
 
   
@@ -333,7 +319,7 @@ cd ~/environment/helm/nginx
 
 ```bash
 cat << EOF > templates/NOTES.txt
-CTA 실습
+CAA 실습
 helm 차트를 이용해 nginx를 설치했습니다.
 EOF
 ```
@@ -350,14 +336,14 @@ helm install -n $MY_ID my-nginx .
 
 ```
 NAME: my-nginx
-LAST DEPLOYED: Wed Feb  7 06:23:00 2024
-NAMESPACE: t3user998
+LAST DEPLOYED: Wed May 29 03:06:01 2024
+NAMESPACE: 22222
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 NOTES:
-CTA 실습
-helm 차트를 이용해 nginx를 설치했습니다
+CAA 실습
+helm 차트를 이용해 nginx를 설치했습니다.
 ```
 
 ### 3-3. 배포된 helm 릴리즈를 삭제한다.
@@ -385,7 +371,7 @@ metadata:
   labels:
     app: nginx
     service: nginx
-    installed-namespace: {{ .Release.Namespace }}  #추가
+    installed-namespace: "{{ .Release.Namespace }}"  #추가
 spec:
   ports:
   - port: 80
@@ -402,7 +388,7 @@ spec:
 - 아래와 같이 `NOTES.txt`을 수정합니다.
 
 ```
-CTA 실습
+CAA 실습
 
 helm 차트를 이용해 nginx를 설치했습니다.
 
@@ -422,17 +408,19 @@ helm install my-nginx . -n $MY_ID
 
 ```bash
 NAME: my-nginx
-LAST DEPLOYED: Wed Feb  7 06:42:47 2024
-NAMESPACE: 33333
+LAST DEPLOYED: Wed May 29 06:43:41 2024
+NAMESPACE: 22222
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 NOTES:
-CTA 실습
+CAA 실습
 
 helm 차트를 이용해 nginx를 설치했습니다.
 
 Your release is named my-nginx.
+
+삭제 하시려면 아래 명령어를 실행하세요
 ```
 
 ### 4-3. 확인
@@ -450,13 +438,12 @@ kubectl get svc -n $MY_ID
 - (수행코드/결과 예시)
 
 ```bash
-ubuntu@ip-10-2-10-163:~/k8s-helm/nginx$ helm ls -n $MY_ID
-NAME            NAMESPACE                 REVISION        UPDATED                                 STATUS          CHART           APP VERSION
-my-nginx        $MY_ID         1               2023-02-17 10:23:37.441298419 +0900 KST deployed        my-nginx-0.1.0  1.0
-
-ubuntu@ip-10-2-10-163:~/k8s-helm/nginx$ kubectl get svc -n $MY_ID
-NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
-my-nginx-nginx   ClusterIP   172.20.61.3   <none>        80/TCP    2m25s
+mspmanager:~/environment/nginx $ helm ls -n $MY_ID
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
+my-nginx        22222           1               2024-05-29 06:43:41.905283345 +0000 UTC deployed        nginx-0.1.0     1.16.0     
+mspmanager:~/environment/nginx $ kubectl get svc -n $MY_ID
+NAME             TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+my-nginx-nginx   ClusterIP   10.100.160.132   <none>        80/TCP    3h58m
 ```
 
 ### 4-4. nginx 서비스의 labels을 확인
@@ -468,7 +455,7 @@ kubectl get svc my-nginx-nginx -n $MY_ID -o jsonpath={.metadata.labels}
 - (수행코드/결과 예시)
 
 ```bash
-{"app":"nginx","app.kubernetes.io/managed-by":"Helm","installed-namespace":"t3user998","service":"nginx"}
+{"app":"nginx","app.kubernetes.io/managed-by":"Helm","installed-namespace":"22222","service":"nginx"}
 ```
 
 ![](../images/200.png)
@@ -512,12 +499,13 @@ helm uninstall my-nginx -n $MY_ID
 
 ### 5-1. values.yaml 수정
 
-- nginx/`values.yaml` 파일의 내용을 아래 내용으로 교체합니다.
+- nginx/`values.yaml` 파일의 내용에 아래 내용 변경,추가합니다.
 
 ```yaml
+#추가
 environment: stage
-
-replicaCount: 1
+#변경
+replicaCount: 2
 ```
 
 ### 5-2. configmap.yaml 생성
@@ -557,17 +545,6 @@ spec:
       labels:
         app: nginx
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 10
-              preference:
-                matchExpressions:
-                  - key: nodetype
-                    operator: In
-                    values:
-                      - nginxserver
-                      - webserver
       containers:
         - name: nginx
           image: nginx:latest
@@ -606,14 +583,14 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: t3user998
-  creationTimestamp: "2024-02-07T06:55:32Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-05-29T10:57:00Z"
   labels:
     app.kubernetes.io/managed-by: Helm
   name: my-nginx-configmap
-  namespace: default
-  resourceVersion: "438716"
-  uid: d7b14190-c640-486c-b86e-3375a09394f7
+  namespace: "22222"
+  resourceVersion: "1227653"
+  uid: 5ed2a0b5-611d-48cc-90c2-4d2b139e809a
 ```
 
 ![](../images/201.png)
@@ -723,17 +700,6 @@ spec:
       labels:
         app: nginx
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 10
-            preference:
-              matchExpressions:
-              - key: nodetype
-                operator: In
-                values:
-                - nginxserver
-                - webserver
       containers:
       - name: nginx
         image: {{ .Values.image.name }}:{{ .Values.image.tag }} ## 변경
@@ -756,7 +722,7 @@ helm ls -n $MY_ID
 
 ```bash
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART           APP VERSION
-my-nginx        33333       2               2023-02-17 10:36:05.350877993 +0900 KST deployed        my-nginx-0.1.0  1.0
+my-nginx        22222           2               2024-05-29 11:11:24.986435154 +0000 UTC deployed        nginx-0.1.0     1.16.0  
 ```
 
 ### 7-6. configmap의 data를 확인
@@ -776,14 +742,14 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2024-02-07T07:09:01Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-05-29T11:10:07Z"
   labels:
     app.kubernetes.io/managed-by: Helm
   name: my-nginx-configmap
-  namespace: t3user998
-  resourceVersion: "443905"
-  uid: ccb816ac-4c76-44a9-ac0e-9758a8ff76c1
+  namespace: "22222"
+  resourceVersion: "1230606"
+  uid: 3f5c3214-4b38-4716-83a0-730eb26d2a46
 ```
 
 ### 7-7. 설명
