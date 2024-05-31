@@ -803,14 +803,14 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2024-02-07T07:09:01Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-05-30T02:38:22Z"
   labels:
     app.kubernetes.io/managed-by: Helm
   name: my-nginx-configmap
-  namespace: 33333
-  resourceVersion: "447167"
-  uid: ccb816ac-4c76-44a9-ac0e-9758a8ff76c1
+  namespace: "22222"
+  resourceVersion: "1435459"
+  uid: 7a36a3a5-b529-4c65-a038-1e6a6c8ecba2
 ```
 
   
