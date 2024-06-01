@@ -6,25 +6,25 @@
 ---
 
 - [7일차 - Lab 1. Helm](#7일차---lab-1.-helm)
-  - [1. Helm](#🔴-1.-helm)
-  - [2. 기본 차트 생성](#🔴-2.-기본-차트-생성)
-  - [3. NOTES.txt](#🔴-3.-notes.txt)
-  - [4. 빌트인 객체](#🔴-4.-빌트인-객체)
-  - [5. values.yaml](#🔴-5.-values.yaml)
-  - [6. 명령어 우선순위](#🔴-6.-명령어-우선순위)
-  - [7. values.yaml 파일의 일반적인 계층 구조 적용](#🔴-7.-values.yaml-파일의-일반적인-계층-구조-적용)
-  - [8. 파이프라인을 이용한 순차 처리 적용](#🔴-8.-파이프라인을-이용한-순차-처리-적용)
-  - [9. 주로 사용되는 함수들 적용해보기](#🔴-9.-주로-사용되는-함수들-적용해보기)
-  - [10. if문과 toYaml 추가 적용해보기](#🔴-10.-if문과-toyaml-추가-적용해보기)
-  - [11. with : 변수 범위(scope)의 지정 제어](<#🔴-11.-with-%3A-변수-범위(scope)의-지정-제어>)
-  - [12. loop 구조 적용해보기](#🔴-12.-loop-구조-적용해보기)
-  - [13. define, template 적용해보기](#🔴-13.-define%2C-template-적용해보기)
-  - [14. Files 이용해서 다른 파일 내용 가져오기](#🔴-14.-files-이용해서-다른-파일-내용-가져오기)
-  - [15. 서브차트 적용해보기](#🔴-15.-서브차트-적용해보기)
-  - [16. 부모 차트에서 오버라이드](#🔴-16.-부모-차트에서-오버라이드)
-  - [17. Global value 정의하기](#🔴-17.-global-value-정의하기)
-  - [18. 템플릿 내에서 변수 정의](#🔴-18.-템플릿-내에서-변수-정의)
-  - [19. 실습에 사용된 오브젝트 정리](#🔴-19.-실습에-사용된-오브젝트-정리)
+  - [1. Helm](#1.-helm)
+  - [2. 기본 차트 생성](#2.-기본-차트-생성)
+  - [3. NOTES.txt](#3.-notes.txt)
+  - [4. 빌트인 객체](#4.-빌트인-객체)
+  - [5. values.yaml](#5.-values.yaml)
+  - [6. 명령어 우선순위](#6.-명령어-우선순위)
+  - [7. values.yaml 파일의 일반적인 계층 구조 적용](#7.-values.yaml-파일의-일반적인-계층-구조-적용)
+  - [8. 파이프라인을 이용한 순차 처리 적용](#8.-파이프라인을-이용한-순차-처리-적용)
+  - [9. 주로 사용되는 함수들 적용해보기](#9.-주로-사용되는-함수들-적용해보기)
+  - [10. if문과 toYaml 추가 적용해보기](#10.-if문과-toyaml-추가-적용해보기)
+  - [11. with : 변수 범위(scope)의 지정 제어](<#11.-with-%3A-변수-범위(scope)의-지정-제어>)
+  - [12. loop 구조 적용해보기](#12.-loop-구조-적용해보기)
+  - [13. define, template 적용해보기](#13.-define%2C-template-적용해보기)
+  - [14. Files 이용해서 다른 파일 내용 가져오기](#14.-files-이용해서-다른-파일-내용-가져오기)
+  - [15. 서브차트 적용해보기](#15.-서브차트-적용해보기)
+  - [16. 부모 차트에서 오버라이드](#16.-부모-차트에서-오버라이드)
+  - [17. Global value 정의하기](#17.-global-value-정의하기)
+  - [18. 템플릿 내에서 변수 정의](#18.-템플릿-내에서-변수-정의)
+  - [19. 실습에 사용된 오브젝트 정리](#19.-실습에-사용된-오브젝트-정리)
 
 ---
 
@@ -876,7 +876,7 @@ spec:
       labels:
         app: nginx
         {{- if eq .Values.podLabel.use "yes" }}       ### if문 추가
-        class: T3-CTA
+        class: T3-CAA
         {{- else }}
         class: T3
         {{- end }}
@@ -886,17 +886,6 @@ spec:
         day: fifth
         {{ end }}
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 10
-            preference:
-              matchExpressions:
-              - key: nodetype
-                operator: In
-                values:
-                - nginxserver
-                - webserver
       containers:
       - name: nginx
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
@@ -933,23 +922,12 @@ spec:
       labels:
         app: nginx
         class:
-          T3-CTA ## podLabel.use 값이 "yes" 이기 때문에 'class: T3-CTA'가 템플릿에 추가됨
+          T3-CAA ## podLabel.use 값이 "yes" 이기 때문에 'class: T3-CAA'가 템플릿에 추가됨
           ## 두번째 IF문인 템플릿 지시문에 하이픈(-)을 넣지 않았기 때문에 공백이 추가됨
         day:
           fifth ## podLabel.use 값이 "yesyes"가 아니기 때문에 'day: fifth'가 템플릿에 추가됨
           ## 템플릿 지시문에 하이픈(-)을 넣지 않았기 때문에 공백이 추가됨
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 10
-              preference:
-                matchExpressions:
-                  - key: nodetype
-                    operator: In
-                    values:
-                      - nginxserver
-                      - webserver
       containers:
         - name: nginx
           image: nginx:latest
@@ -1072,7 +1050,7 @@ spec:
     metadata:
       labels:
         app: nginx
-        class: T3-CTA
+        class: T3-CAA
 
         day: fifth
 
@@ -1370,7 +1348,7 @@ metadata:
   name: my-nginx-configmap
   labels: ## _helpers.tpl 파일에 정의된 my-nginx.labels 블록이 적용되어 있다.
     generator: helm
-    date: 2023-02-17 ## 날짜 함수가 사용 가능하다.
+    date: 2023-06-01 ## 날짜 함수가 사용 가능하다.
     chart: my-nginx ## Chart.yaml의 값을 가져올 수 있다.
     version: 0.1.0
 data:
@@ -1461,78 +1439,59 @@ data:
 {{ .Files.Get "files/config2.yaml" | trim | indent 2 }}  ##추가
 ```
 
-### 14-6. 차트 설치
+### 14-6. dry-run 통해 template 미리 확인
 
 ```bash
-helm install -n $MY_ID my-nginx .
+helm install --dry-run my-nginx .
 ```
 
 ### 14-7. configmap의 데이터를 확인해본다.
 
-```bash
-kubectl get configmap my-nginx-configmap -n $MY_ID -o yaml
-```
-
 - (수행코드/결과 예시)
 
 ```bash
+---
+# Source: nginx/templates/configmap.yaml
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-nginx-configmap
+  labels:
+    generator: helm
+    date: 2024-06-01
+    chart: nginx
+    version: 0.1.0
 data:
+  environment: "stage"
+  purpose: WEBSERVERWEBSERVERWEBSERVERWEBSERVERWEBSERVER
+  cluster: kubernetes
   args: |-
     - "a"
     - "b"
     - "c"
     - "d"
     - "e"
-  cluster: kubernetes
-  configval1: "1"         ## config2.yaml 파일의 내용 3줄이 그대로 주입되었다.
+  configval1: "1"
   configval2: "2"
-  configval3: "3"
-  environment: stage
-  purpose: WEBSERVERWEBSERVERWEBSERVERWEBSERVERWEBSERVER
-kind: ConfigMap
-metadata:
-  annotations:
-    meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2023-02-17T01:47:44Z"
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    chart: my-nginx
-    date: "2023-02-17"
-    generator: helm
-    version: 0.1.0
-  name: my-nginx-configmap
-  namespace: 33333
-  resourceVersion: "20713"
-  uid: a2d940a3-ab84-40a8-b74f-fe4e8697a61d
+  configval3: "3"  ##추가
 ```
 
 ### 14-8. secret의 데이터를 확인해본다.
 
-```bash
-kubectl get secret my-nginx-secret -n $MY_ID -o yaml
-```
 
 - (수행코드/결과 예시)
 
 ```bash
+---
+# Source: nginx/templates/secret.yaml
 apiVersion: v1
-data:
-  token: bWVzc2FnZSA9IEhlbGxvIGZyb20gY29uZmlnIDEK      ## token 항목에 데이터가 주입되어있다.
 kind: Secret
 metadata:
-  annotations:
-    meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2023-02-17T01:47:44Z"
-  labels:
-    app.kubernetes.io/managed-by: Helm
   name: my-nginx-secret
-  namespace: 33333
-  resourceVersion: "20712"
-  uid: 939e8df2-742d-4a70-b7bf-667ecd3b7c71
 type: Opaque
+data:
+  token: |-
+        bWVzc2FnZSA9IEhlbGxvIGZyb20gY29uZmlnIDEK
 ```
 
 ### 14-9. secret의 data에 저장된 token value를 decode 해본다.
@@ -1541,13 +1500,8 @@ type: Opaque
 echo bWVzc2FnZSA9IEhlbGxvIGZyb20gY29uZmlnIDEK= | base64 --decode ; echo
 ```
 
-### 14-10. 배포된 helm 릴리즈를 삭제한다.
 
-```bash
-helm uninstall -n $MY_ID my-nginx
-```
-
-### 14-11. 참고
+### 14-10. 참고
 
 - 어떤 파일은 .Files 객체를 통해 액세스할 수 없는데, 주로 보안 상의 이유 때문이다.
 - templates/에 있는 파일은 액세스할 수 없다.
@@ -1618,26 +1572,25 @@ kubectl get cm my-nginx-subchart-configmap -n $MY_ID -o yaml
 - (수행코드/결과 예시)
 
 ```bash
-ubuntu@ip-10-2-10-163:~/k8s-helm/nginx$ kubectl get cm my-nginx-subchart-configmap -o yaml
 apiVersion: v1
 data:
-  environment: prod         ## 서브차트의 values.yaml에 정의된 내용이 적용되었다.
+  environment: prod
 kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: 33333
-  creationTimestamp: "2023-02-17T01:52:46Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-06-01T06:55:36Z"
   labels:
     app.kubernetes.io/managed-by: Helm
     chart: subnginx
-    date: "2023-02-17"
+    date: "2024-06-01"
     generator: helm
     version: 0.1.0
   name: my-nginx-subchart-configmap
-  namespace: 33333
-  resourceVersion: "21777"
-  uid: 0782676c-8c29-471a-8a58-8cf058c116ae
+  namespace: "22222"
+  resourceVersion: "2030426"
+  uid: eb53293a-be53-443b-acce-f254ddf5a639
 ```
 
   
@@ -1712,18 +1665,18 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: 33333
-  creationTimestamp: "2023-02-17T01:52:46Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-06-01T06:55:36Z"
   labels:
     app.kubernetes.io/managed-by: Helm
     chart: subnginx
-    date: "2023-02-17"
+    date: "2024-06-01"
     generator: helm
     version: 0.1.0
   name: my-nginx-subchart-configmap
-  namespace: 33333
-  resourceVersion: "21955"
-  uid: 0782676c-8c29-471a-8a58-8cf058c116ae
+  namespace: "22222"
+  resourceVersion: "2030874"
+  uid: eb53293a-be53-443b-acce-f254ddf5a639
 ```
 
 - 부모 차트의 `values.yaml`에 정의된 subnginx.configmap.environment의 값인 develop가 적용되어있다.
@@ -1820,18 +1773,18 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2023-02-17T01:52:46Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-06-01T06:55:36Z"
   labels:
     app.kubernetes.io/managed-by: Helm
     chart: subnginx
-    date: "2023-02-17"
+    date: "2024-06-01"
     generator: helm
     version: 0.1.0
   name: my-nginx-subchart-configmap
-  namespace: t3user998
-  resourceVersion: "22186"
-  uid: 0782676c-8c29-471a-8a58-8cf058c116ae
+  namespace: "22222"
+  resourceVersion: "2031528"
+  uid: eb53293a-be53-443b-acce-f254ddf5a639
 ```
 
 - 부모 차트의 values.yaml에 정의된 global.configmap.environment의 값인 confused가 적용되어있다.
@@ -1879,18 +1832,18 @@ kind: ConfigMap
 metadata:
   annotations:
     meta.helm.sh/release-name: my-nginx
-    meta.helm.sh/release-namespace: 33333
-  creationTimestamp: "2023-02-17T01:52:46Z"
+    meta.helm.sh/release-namespace: "22222"
+  creationTimestamp: "2024-06-01T06:55:36Z"
   labels:
     app.kubernetes.io/managed-by: Helm
     chart: subnginx
-    date: "2023-02-17"
+    date: "2024-06-01"
     generator: helm
     version: 0.1.0
   name: my-nginx-subchart-configmap
-  namespace: 33333
-  resourceVersion: "22186"
-  uid: 0782676c-8c29-471a-8a58-8cf058c116ae
+  namespace: "22222"
+  resourceVersion: "2031528"
+  uid: eb53293a-be53-443b-acce-f254ddf5a639
 ```
 
   

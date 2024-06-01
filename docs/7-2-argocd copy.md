@@ -191,6 +191,7 @@ git config --global user.name "<<나의 깃헙 username>>"
 
 - 자신의 Github에 `rollouts-demo`라는 이름의 Repository를 생성합니다.
 
+![](../images/213.png)
 
 **📌 [입력]**
 
@@ -198,30 +199,36 @@ git config --global user.name "<<나의 깃헙 username>>"
 > | ------------------ | --------------- | ------------------- |
 > | ➕ Repository name | `rollouts-demo` | 🧲복사 & 📋붙여넣기 |
 > | ➕ 공개여부        | `Private`       | 👆🏻라디오버튼 선택   |
-> | ➕ README        | `Add a README file`       | Check   |
 
 - `Create repository` 클릭
 
-### ✔ 4-2. repo url 설정
+### ✔ 4-2. repo url 복사 및 메모
 
-```bash
-export ROLLOUTS_DEMO_URL="<< my github repo url >>"
-```
+- 생성된 url을 `rollouts-demo URL`에 메모합니다.
 
 ### ✔ 4-3. Clone
+
+- argocd 디렉토리를 생성합니다.
+
+```bash
+mkdir -p ~/environment/argocd
+```
 
 - 디렉토리로 이동
 
 ```bash
-cd ~/environment
+cd ~/environment/argocd
 ```
 
 - git clone
 
 ```bash
-git clone $ROLLOUTS_DEMO_URL
+git clone <<메모한 rollouts-demo url>>
 ```
 
+- 나의 github username과 토큰을 입력합니다.
+
+![](../images/214.png)
 
 - clone 받은 디렉토리로 이동
 
@@ -229,147 +236,243 @@ git clone $ROLLOUTS_DEMO_URL
 cd rollouts-demo
 ```
 
+### ✔ 4-4. helm차트 생성 (1)
 
-### ✔ 4-4. rollouts-demo 생성
-
-
-- ingress.yaml 생성
+- 🔥🔥🔥~/environment/argocd/rollouts-demo 디렉토리에서 작업합니다.🔥🔥🔥
 
 ```bash
-cat << EOF > ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: rollouts-demo-ingress
-  annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rollouts-demo-root
-            port:
-              name: use-annotation
+cd ~/environment/argocd/rollouts-demo
+```
+
+<br>
+
+- templates와 charts 생성
+
+```bash
+mkdir templates charts
+```
+
+- .helmignore 생성
+
+```bash
+cat << EOF > .helmignore
+# Patterns to ignore when building packages.
+# This supports shell glob matching, relative path matching, and
+# negation (prefixed with !). Only one pattern per line.
+.DS_Store
+# Common VCS dirs
+.git/
+.gitignore
+.bzr/
+.bzrignore
+.hg/
+.hgignore
+.svn/
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/
 EOF
 ```
 
-- service.yaml 생성
+- .helmignore 파일이 안보인다면 cloud9세팅에서 숨긴파일 보기를 해줍니다.
+
+<br>
+
+- Chart.yaml 생성
 
 ```bash
-cat << EOF > service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: rollouts-demo-root
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    targetPort: http
-    protocol: TCP
-    name: http
-  selector:
-    app: rollouts-demo
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rollouts-demo-canary
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    targetPort: http
-    protocol: TCP
-    name: http
-  selector:
-    app: rollouts-demo
-    # This selector will be updated with the pod-template-hash of the canary ReplicaSet. e.g.:
-    # rollouts-pod-template-hash: 7bf84f9696
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rollouts-demo-stable
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    targetPort: http
-    protocol: TCP
-    name: http
-  selector:
-    app: rollouts-demo
-    # This selector will be updated with the pod-template-hash of the stable ReplicaSet. e.g.:
-    # rollouts-pod-template-hash: 789746c88d
+cat << EOF > Chart.yaml
+apiVersion: v2
+name: rollouts-demo
+description: rollouts-demo chart for Kubernetes
+version: 0.1.0
 EOF
 ```
 
-- rollout.yaml
+<br>
+
+
+<br>
+
+- `<<나의도메인>>` 부분을 수정합니다.
 
 ```bash
-cat << EOF > rollout.yaml
+cat << EOF > values.yaml
+replicas: 3
+port: 8000
+
+image:
+  repository: public.ecr.aws/q2w5i2w9/biz-order
+  tag: v1
+  imagePullPolicy: IfNotPresent
+  containerPort: 8081
+
+domain: caa-2024.click
+subdomain: $MY_ID
+EOF
+```
+
+### ✔ 4-5. helm차트 생성 (2)
+
+```bash
+cd ~/environment/argocd/rollouts-demo
+```
+
+- templates 디렉토리 내부에 파일을 생성합니다.
+
+<br>
+
+- rollout
+
+```bash
+cat << EOF > templates/rollouts-demo-rollout.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: rollouts-demo
+  name: {{ .Release.Name }}
 spec:
-  replicas: 1
-  strategy:
-    canary:
-      canaryService: rollouts-demo-canary
-      stableService: rollouts-demo-stable
-      trafficRouting:
-        alb:
-          ingress: rollouts-demo-ingress
-          servicePort: 80
-          rootService: rollouts-demo-root
-      steps:
-      - setWeight: 5
-      - pause: {}
-  revisionHistoryLimit: 2
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: rollouts-demo
+      app: {{ .Release.Name }}
+      version: v1
   template:
     metadata:
       labels:
-        app: rollouts-demo
+        app: {{ .Release.Name }}
+        version: v1
     spec:
       containers:
-      - name: rollouts-demo
-        image: argoproj/rollouts-demo:blue
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-        resources:
-          requests:
-            memory: 32Mi
-            cpu: 5m
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ default "Always" .Values.image.imagePullPolicy }}
+          name: {{ .Release.Name }}
+          ports:
+            - containerPort: {{ .Values.image.containerPort }}
+  strategy:
+    blueGreen:
+      activeService: {{ .Release.Name }}-active
+      previewService: {{ .Release.Name }}-preview
+      autoPromotionEnabled: false
 EOF
 ```
 
+<br>
 
-
-## 5. Code Github Push
+- service
 
 ```bash
-git add .
-
-git commit -m "first commit"
-
-git push
-
+cat << EOF > templates/rollouts-demo-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-active
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.port }}
+    targetPort: {{ .Values.image.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-preview
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.port }}
+      targetPort: {{ .Values.image.containerPort }}
+EOF
 ```
+
+<br>
+
+- virtualService
+
+```bash
+cat << EOF > templates/istio-virtual-service.yaml
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-vs
+spec:
+  hosts:
+  - "{{ .Values.subdomain }}.{{ .Values.domain }}"
+  gateways:
+  - istio-system/istio-gateway
+  http:
+  - match:
+    - uri:
+        exact: /
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: {{ .Release.Name }}-active ## 서비스명
+        port:
+          number: {{ .Values.port }}
+EOF
+```
+
+<br>
+
+## 5. Helm 차트 Github Push
+
+### ✔ 5-1. cloud9 Source Control 이동
+
+- 왼쪽 아이콘을 클릭하여 Source Control로 이동합니다.
+
+![](../images/215.png)
+
+### ✔ 5-2. Commit
+
+- rollouts-demo의 Changes부분을 화인하고 `+` 버튼을 클릭하여 Staged Changes 상태로 변경합니다.
+
+![](../images/216.png)
+
+<br>
+
+- commit 메시지를 입력하고 `Ctrl+Enter`
+
+### ✔ 5-3. Push
+
+- `오른쪽 아이콘` 클릭 > `Push` 클릭
+
+![](../images/217.png)
+
+- `rollouts-demo` 클릭
+
+![](../images/218.png)
+
+- Username 입력
+
+![](../images/219.png)
+
+- Github token 입력
+
+### ✔ 5-4. Github 확인
+
+- 나의 Github > `rollouts-demo` repository에서 파일을 확인합니다.
+
+![](../images/220.png)
+
+<br>
 
 ## 6. Argocd Project 등록
 
