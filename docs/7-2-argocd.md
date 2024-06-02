@@ -372,6 +372,8 @@ git push
 > | ➕ Project Name | `<<사번>>`      | 본인의 사번을 넣습니다. 예시: 33333 |
 > | ➕ Description  | `<<본인 이름>>` | 각자의 이름을 넣습니다.             |
 
+
+
 ![](../images/222.png)
 
 - 입력후 `Connect` 클릭
@@ -385,17 +387,17 @@ git push
 
 ## 7. Argocd Repository 등록
 
-### 6-1. Repository 페이지 이동
+### 7-1. Repository 페이지 이동
 
 - `Argocd 페이지` > `Settings` > `Repositories`
 
 ![](../images/221.png)
 
-### 6-2. Repository 등록 페이지 이동
+### 7-2. Repository 등록 페이지 이동
 
 - `CONNECT REPO` 클릭
 
-### 6-3. Repository 등록
+### 7-3. Repository 등록
 
 ** [입력]**
 
@@ -406,12 +408,16 @@ git push
 > | ➕ Repository URL                | `<<rollouts-demo repo의 url>>` | Copy & Paste                    |
 > | ➕ SSH private key data          | `SSH private key`              | Copy & Paste                    |
 
+SSH private key data 항목에는 다음 결과를 붙인다.
+```bash
+cat ~/.ssh/id_ed25519
+```
 
 ![](../images/222-1.png)
 
 - 입력후 `Connect` 클릭
 
-### 6-4. Repository 등록 확인
+### 7-4. Repository 등록 확인
 
 ![](../images/223.png)
 
