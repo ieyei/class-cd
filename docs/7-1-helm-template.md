@@ -1854,3 +1854,6 @@ metadata:
 helm uninstall -n $MY_ID my-nginx
 ```
 
+```bash
+kubectl delete ns $MY_ID
+```
