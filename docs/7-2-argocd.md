@@ -46,7 +46,7 @@ echo $MY_ID
 
 ```
 mspmanager:~/environment $ echo $MY_ID
-33333
+22222
 ```
 
 ### ✔ 0-3. namespace 생성
@@ -110,64 +110,45 @@ kubectl get ns
 
 ```
 NAME              STATUS   AGE
-argo-rollouts     Active   23s
-argocd            Active   7d
-default           Active   7d6h
-istio-system      Active   7d6h
-kube-node-lease   Active   7d6h
-kube-public       Active   7d6h
-kube-system       Active   7d6h
+argo-rollouts     Active   21h
+argocd            Active   6d23h
+default           Active   8d
+kube-node-lease   Active   8d
+kube-public       Active   8d
+kube-system       Active   8d
 ```
 
 ``
 
-### ✔ 2-3. pac workspace에서 Appliaction 추가화면 진입
+### ✔ 2-3. argo-rollouts 설치
 
-- `Gitops Console` > `Workspace` > `PaC Workspace` > 나의 workspace 클릭
-- `Create App`을 클릭
+```bash
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+```
 
-### ✔ 2-4. argo-rollouts create
+### ✔ 2-4. Kubectl Plugin Installation
 
-**📌 [입력]**
+1. Install Argo Rollouts Kubectl plugin with curl
+```bash
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+```
 
-> | 항목               | 내용                                       | 액션              |
-> | ------------------ | ------------------------------------------ | ----------------- |
-> | ➕ PaC Source Type | `Catalog`                                  | 👆🏻라디오박스 선택 |
-> | ➕ Title           | `Search Catalog` 클릭 > argo-rollouts 선택 | 선택 후 `Select`  |
 
-- `Create` 버튼 클릭
+2. Make the kubectl-argo-rollouts binary executable.
+```bash
+chmod +x ./kubectl-argo-rollouts-linux-amd64
+```
 
-### ✔ 2-5. argo-rollouts pac detail 화면 진입
+3. Move the binary into your PATH.
+```bash
+sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+```
 
-- pac 리스트에서 `argo-rollouts` 클릭
+4. 확인
+```bash
+kubectl argo rollouts version
+```
 
-### ✔ 2-6. argo-rollouts register
-
-**📌 [입력]**
-
-> | 항목                | 내용                       | 액션                |
-> | ------------------- | -------------------------- | ------------------- |
-> | ➕ Target Namespace | `argo-rollouts`            | 🧲복사 & 📋붙여넣기 |
-> | ➕ Select File      | `override-values-sds.yaml` | 👆🏻셀렉트박스 선택   |
-
-- 입력후 register 클릭
-
-### ✔ 2-7. argo-rollouts sync
-
-- `sync` 클릭 후 health가 될떄까지 대기 (새로고침 및 Sync버튼 다시 클릭)
-
-### ✔ 2-8. argo-rollouts 접속
-
-- 브라우저에 `www.<<나의도메인>>.click` 을 입력하여 페이지를 확인합니다.
-
-![](../images/211.png)
-
-- 🔥🔥🔥CAA수강생 필독🔥🔥🔥
-
-  - CAA수강생 분들은 미리 만들어 놓은 argocd-rollout으로 들어가시면 됩니다.
-  - `www.caa-2024.click` 입니다
-
-<br>
 
 ## 3. Cloud9 Git config
 
