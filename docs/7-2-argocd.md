@@ -15,6 +15,7 @@
   - [6. Argocd Repository 등록](#6-argocd-repository-등록)
   - [7. Argocd Application 등록](#7-argocd-application-등록)
   - [8. Argo Rollout - Canary 배포](#8-Argo-Rollout-Canary-배포)
+  - [9. Argo Rollout - BlueGreen 배포](#9-Argo-Rollout-BlueGreen-배포)
 
 ---
 
