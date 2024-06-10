@@ -1031,3 +1031,9 @@ NAME                                                   KIND        STATUS     AG
 ```
 
 ![](../images/256.png)
+
+> [!IMPORTANT]
+> 자원 정리를 위해 `argocd application` 및 `Cloud9` 자원 삭제 해 주세요.
+
+* argocd application 삭제
+* AWS cloud9 삭제
