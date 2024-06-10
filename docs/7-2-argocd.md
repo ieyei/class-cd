@@ -43,7 +43,7 @@ echo $MY_ID
 
 ```
 mspmanager:~/environment $ echo $MY_ID
-22222
+33333
 ```
 
 ### 0-3. namespace 생성
@@ -56,6 +56,18 @@ kubectl create ns $MY_ID
 ```bash
 kubectl config set-context --current --namespace $MY_ID
 ```
+
+### 0-5. Kubectl Plugin 설치
+kubectl 플러그인은 명령줄에서 롤아웃을 관리하고 시각화하는 데 편리합니다.
+```bash
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+
+chmod +x ./kubectl-argo-rollouts-linux-amd64
+
+sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+```
+
+
 
 <br>
 
@@ -381,14 +393,14 @@ cat ~/.ssh/id_ed25519
 
 ** [입력]**
 
-> | 항목                         | 내용                             | 액션                                   |
-> | ---------------------------- | -------------------------------- | -------------------------------------- |
-> | ➕ Application Name          | `rollouts-demo-<<사번>>`                  | Copy & Paste                    |
-> | ➕ Project Name              | `<<나의 Project>>`               | 윗챕터에서 만든 프로젝트를 선택합니다. |
+> | 항목                         | 내용                               | 액션                                   |
+> | ---------------------------- |----------------------------------| -------------------------------------- |
+> | ➕ Application Name          | `rollouts-demo-<<사번>>`           | Copy & Paste                    |
+> | ➕ Project Name              | `<<나의 Project>>`                 | 윗챕터에서 만든 프로젝트를 선택합니다. |
 > | ➕ SOURCE > Repo url         | `<<rollouts-demo repo url>>`     | 드롭박스 선택                        |
-> | ➕ SOURCE > Path             | `.`                              | Copy & Paste                    |
+> | ➕ SOURCE > Path             | `canary`                         | Copy & Paste                    |
 > | ➕ DESTINATION > Cluster URL | `https://kubernetes.default.svc` | 드롭박스 선택                        |
-> | ➕ DESTINATION > Namespace   | `<<사번>>`                       | Copy & Paste                    |
+> | ➕ DESTINATION > Namespace   | `<<사번>>`                         | Copy & Paste                    |
 
 ![](../images/253-1.png)
 
@@ -573,7 +585,8 @@ argocd ui로 promote 진행 확인
 Yellow 버전으로 변경된 사항 확인
 ![](../images/231-3.png)
 
-
+### Canary application 삭제
+![](../images/231-4.png)
 
 ## 9. Argo Rollout Blue Green 배포
 
@@ -817,14 +830,14 @@ git push
 
 ### Application 등록  
 입력 항목
-> | 항목                              | 내용                            |
-> |---------------------------------|-------------------------------|
-> | ➕ Application Name              | `blue-green`                     |
-> | ➕ Project Name                  | `<<나의 Project>>`              |
-> | ➕ Repository URL                | `<<rollouts-demo repo의 url>>` |
-> | ➕ Path                          | `helm-blue-green`              |
-> | ➕ Cluster URL                   | `https://kubernetes.default.svc`|
-> | ➕ Namespace                     | `<< My_ID >>`|
+> | 항목                              | 내용                               |
+> |---------------------------------|----------------------------------|
+> | ➕ Application Name              | `blue-green-<<사번>>`              |
+> | ➕ Project Name                  | `<<나의 Project>>`                 |
+> | ➕ Repository URL                | `<<rollouts-demo repo의 url>>`    |
+> | ➕ Path                          | `helm-blue-green`                |
+> | ➕ Cluster URL                   | `https://kubernetes.default.svc` |
+> | ➕ Namespace                     | `<< My_ID >>`                    |
 
 
 ![](../images/255.png)
@@ -839,10 +852,10 @@ Ingress 화살표 클릭
 
 cloud9 에서 rollout 확인
 ```bash
-kubectl argo rollouts get rollout blue-green-helm-guestbook
+kubectl argo rollouts get rollout blue-green-$MY_ID-helm-guestbook
 ```
 ```bash
-Name:            blue-green-helm-guestbook
+Name:            blue-green-33333-helm-guestbook
 Namespace:       33333
 Status:          ✔ Healthy
 Strategy:        BlueGreen
@@ -855,10 +868,10 @@ Replicas:
   Available:     1
 
 NAME                                                   KIND        STATUS     AGE   INFO
-⟳ blue-green-helm-guestbook                            Rollout     ✔ Healthy  8m7s  
+⟳ blue-green-33333-helm-guestbook                            Rollout     ✔ Healthy  8m7s  
 └──# revision:1                                                                     
-   └──⧉ blue-green-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  8m7s  stable,active
-      └──□ blue-green-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  8m7s  ready:1/1
+   └──⧉ blue-green-33333-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  8m7s  stable,active
+      └──□ blue-green-33333-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  8m7s  ready:1/1
 
 ```
 
@@ -878,11 +891,11 @@ SYNC > SYNCHRONIZE 클릭
 
 cloud9 에서 rollout 확인
 ```bash
-kubectl argo rollouts get rollout blue-green-helm-guestbook
+kubectl argo rollouts get rollout blue-green-$MY_ID-helm-guestbook
 ```
 
 ```bash
-Name:            blue-green-helm-guestbook
+Name:            blue-green-33333-helm-guestbook
 Namespace:       33333
 Status:          ॥ Paused
 Message:         BlueGreenPause
@@ -897,13 +910,13 @@ Replicas:
   Available:     1
 
 NAME                                                   KIND        STATUS     AGE  INFO
-⟳ blue-green-helm-guestbook                            Rollout     ॥ Paused   10m  
+⟳ blue-green-33333-helm-guestbook                            Rollout     ॥ Paused   10m  
 ├──# revision:2                                                                    
-│  └──⧉ blue-green-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  35s  preview
-│     └──□ blue-green-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  35s  ready:1/1
+│  └──⧉ blue-green-33333-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  35s  preview
+│     └──□ blue-green-33333-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  35s  ready:1/1
 └──# revision:1                                                                    
-   └──⧉ blue-green-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  10m  stable,active
-      └──□ blue-green-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  10m  ready:1/1
+   └──⧉ blue-green-33333-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  10m  stable,active
+      └──□ blue-green-33333-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  10m  ready:1/1
 ```
 
 Promote
@@ -913,11 +926,11 @@ rollout > Promote-Full > OK
 
 cloud9 에서 rollout 확인
 ```bash
-kubectl argo rollouts get rollout blue-green-helm-guestbook
+kubectl argo rollouts get rollout blue-green-$MY_ID-helm-guestbook
 ```
 
 ```bash
-Name:            blue-green-helm-guestbook
+Name:            blue-green-33333-helm-guestbook
 Namespace:       33333
 Status:          ✔ Healthy
 Strategy:        BlueGreen
@@ -931,13 +944,13 @@ Replicas:
   Available:     1
 
 NAME                                                   KIND        STATUS     AGE    INFO
-⟳ blue-green-helm-guestbook                            Rollout     ✔ Healthy  14m    
+⟳ blue-green-33333-helm-guestbook                            Rollout     ✔ Healthy  14m    
 ├──# revision:2                                                                      
-│  └──⧉ blue-green-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  4m11s  stable,active
-│     └──□ blue-green-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  4m11s  ready:1/1
+│  └──⧉ blue-green-33333-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  4m11s  stable,active
+│     └──□ blue-green-33333-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  4m11s  ready:1/1
 └──# revision:1                                                                      
-   └──⧉ blue-green-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  14m    delay:7s
-      └──□ blue-green-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  14m    ready:1/1
+   └──⧉ blue-green-33333-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  14m    delay:7s
+      └──□ blue-green-33333-helm-guestbook-6c7fb8b69d-m2vh6  Pod         ✔ Running  14m    ready:1/1
 ```
 
 ![](../images/258.png)
@@ -955,11 +968,11 @@ HISTORY AND ROLLBACK > 이전 버전 선택 후 Rollback
 
 cloud9 에서 rollout 확인
 ```bash
-kubectl argo rollouts get rollout blue-green-helm-guestbook
+kubectl argo rollouts get rollout blue-green-$MY_ID-helm-guestbook
 ```
 
 ```bash
-Name:            blue-green-helm-guestbook
+Name:            blue-green-33333-helm-guestbook
 Namespace:       33333
 Status:          ॥ Paused
 Message:         BlueGreenPause
@@ -974,13 +987,13 @@ Replicas:
   Available:     1
 
 NAME                                                   KIND        STATUS     AGE  INFO
-⟳ blue-green-helm-guestbook                            Rollout     ॥ Paused   35m  
+⟳ blue-green-33333-helm-guestbook                            Rollout     ॥ Paused   35m  
 ├──# revision:3                                                                    
-│  └──⧉ blue-green-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  35m  preview
-│     └──□ blue-green-helm-guestbook-6c7fb8b69d-bmk2k  Pod         ✔ Running  25s  ready:1/1
+│  └──⧉ blue-green-33333-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  35m  preview
+│     └──□ blue-green-33333-helm-guestbook-6c7fb8b69d-bmk2k  Pod         ✔ Running  25s  ready:1/1
 └──# revision:2                                                                    
-   └──⧉ blue-green-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  25m  stable,active
-      └──□ blue-green-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  25m  ready:1/1
+   └──⧉ blue-green-33333-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  25m  stable,active
+      └──□ blue-green-33333-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  25m  ready:1/1
 ```
 
 Promote
@@ -990,11 +1003,11 @@ rollout > Promote-Full > OK
 
 cloud9 에서 rollout 확인
 ```bash
-kubectl argo rollouts get rollout blue-green-helm-guestbook
+kubectl argo rollouts get rollout blue-green-$MY_ID-helm-guestbook
 ```
 
 ```bash
-Name:            blue-green-helm-guestbook
+Name:            blue-green-33333-helm-guestbook
 Namespace:       33333
 Status:          ✔ Healthy
 Strategy:        BlueGreen
@@ -1008,13 +1021,13 @@ Replicas:
   Available:     1
 
 NAME                                                   KIND        STATUS     AGE   INFO
-⟳ blue-green-helm-guestbook                            Rollout     ✔ Healthy  39m   
+⟳ blue-green-33333-helm-guestbook                            Rollout     ✔ Healthy  39m   
 ├──# revision:5                                                                     
-│  └──⧉ blue-green-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  39m   stable,active
-│     └──□ blue-green-helm-guestbook-6c7fb8b69d-smrxg  Pod         ✔ Running  101s  ready:1/1
+│  └──⧉ blue-green-33333-helm-guestbook-6c7fb8b69d           ReplicaSet  ✔ Healthy  39m   stable,active
+│     └──□ blue-green-33333-helm-guestbook-6c7fb8b69d-smrxg  Pod         ✔ Running  101s  ready:1/1
 └──# revision:4                                                                     
-   └──⧉ blue-green-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  29m   delay:14s
-      └──□ blue-green-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  29m   ready:1/1
+   └──⧉ blue-green-33333-helm-guestbook-5fdf65765f           ReplicaSet  ✔ Healthy  29m   delay:14s
+      └──□ blue-green-33333-helm-guestbook-5fdf65765f-bwmn9  Pod         ✔ Running  29m   ready:1/1
 ```
 
 ![](../images/256.png)
