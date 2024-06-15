@@ -654,15 +654,15 @@ metadata:
 - nginx/`values.yaml` 파일의 내용을 아래와 같이 계층구조로 수정 후 저장한다.
 
 ```yaml
-configmap:
+configmap:          #추가
   environment: stage
   purpose: webserver
 
-replicaCount: 1
+replicaCount: 1   #변경
 
 image:
   name: nginx
-  tag: latest
+  tag: latest     #변경
 ```
 
 ### 7-2. configmap.yaml 수정
